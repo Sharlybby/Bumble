@@ -2,16 +2,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Love App</title>
-
-  <!-- Supporto iOS Web App -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Love App">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon.png">
-  <link rel="icon" href="icon.png">
-
+  <title>Card con swipe e iframe</title>
   <style>
     body {
       font-family: sans-serif;
@@ -20,28 +11,191 @@
       padding: 2rem;
       background: #f9f9f9;
     }
+
     .card {
       max-width: 400px;
       width: 100%;
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
-      transition: transform 0.2s ease;
+      background: white;
+      position: relative;
     }
-    .card:active {
-      transform: scale(0.97);
+
+    .iframe-preview {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-top: 177.7778%;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(63,69,81,0.16);
+      margin-top: 1.6em;
+      margin-bottom: 0.9em;
+    }
+
+    .iframe-preview iframe {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+
+    .click-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .iframe-details {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .iframe-details.visible {
+      display: block;
+    }
+
+    .iframe-details > div {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-top: 533.3333%;
+      padding-bottom: 0;
+      box-shadow: 0 2px 8px rgba(63,69,81,0.16);
+      margin-top: 1.6em;
+      margin-bottom: 0.9em;
+      overflow: hidden;
+      border-radius: 8px;
+      will-change: transform;
+    }
+
+    .iframe-details iframe {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .swipe-right,
+    .swipe-left {
+      display: none;
+      text-align: center;
+      padding: 1.5em;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .visible {
+      display: block !important;
+    }
+
+    .swipe-left img,
+    .swipe-right img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 1em;
+    }
+
+    iframe {
+      border: none;
+      outline: none;
+      appearance: none;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div style="position: relative; width: 100%; height: 0; padding-top: 533.3333%;
-      padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
-      border-radius: 8px; will-change: transform;">
-      <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
-        src="https://www.canva.com/design/DAGrLvEDIj8/20zKnbSXWC8fak3aOrdmaw/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
+
+  <div class="card" id="card">
+
+    <!-- PRIMO IFRAME -->
+    <div class="iframe-preview" id="previewFrame">
+      <iframe loading="lazy"
+        src="https://www.canva.com/design/DAGq51p4ID4/lsJBFZunXqnYU8CTDCITkA/view?embed"
+        allowfullscreen>
       </iframe>
+      <div class="click-overlay"
+           ontouchstart="handleTouchStart(event)"
+           ontouchend="handleTouchEnd(event)"
+           onclick="showDetails()">
+      </div>
     </div>
+
+    <!-- SECONDO IFRAME (aggiornato come richiesto) -->
+    <div class="iframe-details" id="detailsIframe">
+      <div>
+        <iframe loading="lazy"
+          src="https://www.canva.com/design/DAGrLvEDIj8/20zKnbSXWC8fak3aOrdmaw/view?embed"
+          allowfullscreen="allowfullscreen" allow="fullscreen">
+        </iframe>
+      </div>
+    </div>
+
+    <!-- SWIPE A DESTRA -->
+    <div class="swipe-right" id="swipeRight">
+      <h2>🎉 Congratulazioni!</h2>
+      <p>La vostra relazione continua... ❤️</p>
+      <img src="https://media.giphy.com/media/3o7TKtnuHOHHUjR38Y/giphy.gif" alt="Cuori felici">
+    </div>
+
+    <!-- SWIPE A SINISTRA -->
+    <div class="swipe-left" id="swipeLeft">
+      <h2>💔 Addio strappalacrime</h2>
+      <p>Le vostre strade si separano... 😿</p>
+      <img src="https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif" alt="Gatto triste">
+    </div>
+
   </div>
+
+  <script>
+    let touchStartX = 0;
+
+    function handleTouchStart(event) {
+      touchStartX = event.changedTouches[0].screenX;
+    }
+
+    function handleTouchEnd(event) {
+      const touchEndX = event.changedTouches[0].screenX;
+      const diff = touchEndX - touchStartX;
+
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          showSwipeResult("right");
+        } else {
+          showSwipeResult("left");
+        }
+      }
+    }
+
+    function showDetails() {
+      if (!window.swipeDetected) {
+        document.getElementById('detailsIframe').classList.add('visible');
+      }
+    }
+
+    function showSwipeResult(direction) {
+      window.swipeDetected = true;
+      document.getElementById('previewFrame').style.display = 'none';
+      document.getElementById('detailsIframe').style.display = 'none';
+      if (direction === "right") {
+        document.getElementById('swipeRight').classList.add('visible');
+      } else {
+        document.getElementById('swipeLeft').classList.add('visible');
+      }
+    }
+  </script>
+
 </body>
